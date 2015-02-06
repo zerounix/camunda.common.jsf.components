@@ -1,0 +1,48 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:composite="http://java.sun.com/jsf/composite">
+
+	<composite:interface>
+		<composite:attribute name="restenginePath" targets="#{cc.attrs.restenginePath}" required="true" />
+		<composite:attribute name="taskId" targets="#{cc.attrs.taskId}" required="true" />		
+		<composite:attribute name="engine" targets="#{cc.attrs.engine}" required="true" shortDescription="the name of the camunda engine the process runs on" />
+	</composite:interface>
+	
+	<composite:implementation>
+		<h:outputScript library="webjars" name="jquery/2.1.0/jquery.js" target="head"/>
+		<h:outputScript library="webjars" name="lodash/2.4.1-6/lodash.min.js" target="head"/>
+		<h:outputScript library="webjars" name="sax/0.6.0/lib/sax.js" target="head"/>
+		<h:outputScript library="webjars" name="Snap.svg/0.3.0/snap.svg-min.js" target="head"/>
+		<h:outputScript library="webjars" name="jquery-mousewheel/3.1.11/jquery.mousewheel.js" target="head"/>
+
+		<!-- bpmn-js viewer -->
+  		<h:outputScript library="webjars" name="bpmn-js/0.8.0-0/bpmn-navigated-viewer.min.js" target="head"/>
+		
+		<div id="diagramCanvas"></div>
+		<script>			
+ 			$(document).ready(function() {
+ 				var BpmnViewer = window.BpmnJS;
+		
+ 				$.get('#{cc.attrs.restenginePath}/engine/#{cc.attrs.engine}/task/#{cc.attrs.taskId}', function(marker) {
+ 					$.get('#{cc.attrs.restenginePath}/engine/#{cc.attrs.engine}/process-definition/' + marker.processDefinitionId + '/xml', function(data) {
+ 						var bpmnViewer = new BpmnViewer({container: '#diagramCanvas', width: '100%', height: '100%'});
+ 						bpmnViewer.importXML(data.bpmn20Xml, function(err) {
+ 					  		if (err) {
+ 						    	console.log('error rendering', err);
+ 				  			} else {
+ 							    var canvas = bpmnViewer.get('canvas'), overlays = bpmnViewer.get('overlays');
+ 					      		// zoom to fit full viewport
+ 					      		canvas.zoom('fit-viewport');
+ 								// add marker
+ 								canvas.addMarker(marker.taskDefinitionKey, 'highlight');	
+ 							}
+ 			  			});
+ 					});									
+ 				});
+ 			});
+		</script>
+				
+	</composite:implementation>
+</html>
